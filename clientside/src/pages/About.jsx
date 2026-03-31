@@ -9,7 +9,7 @@ const About = () => {
           About <span className="text-slate-500">Us</span>
         </h1>
         <p className="text-slate-500 mt-4 max-w-2xl mx-auto font-inter">
-          Revolutionizing the way you manage health by connecting patients and doctors seamlessly.
+          Improving the way you manage health by connecting patients and doctors seamlessly.
         </p>
       </div>
 

@@ -184,38 +184,43 @@ const MyProfile = () => {
               <p className="text-blue-400">{userData.phone}</p>
             )}
 
-            <p className="font-medium">Address:</p>
+            <p className="font-medium mt-1">Address:</p>
             {isEdit ? (
-              <p>
+              <div className="flex flex-col gap-2 max-w-64">
                 <input
-                  className="bg-gray-50"
+                  className="bg-gray-50 p-1.5 border border-gray-200 rounded text-sm"
+                  placeholder="Address Line 1"
                   onChange={(e) =>
                     setUserData((prev) => ({
                       ...prev,
-                      address: { ...prev.address, line1: e.target.value },
+                      address: { ...(prev.address || {}), line1: e.target.value },
                     }))
                   }
                   value={userData.address?.line1 || ""}
                   type="text"
                 />
-                <br />
                 <input
-                  className="bg-gray-50"
+                  className="bg-gray-50 p-1.5 border border-gray-200 rounded text-sm"
+                  placeholder="Address Line 2 (Optional)"
                   onChange={(e) =>
                     setUserData((prev) => ({
                       ...prev,
-                      address: { ...prev.address, line2: e.target.value },
+                      address: { ...(prev.address || {}), line2: e.target.value },
                     }))
                   }
                   value={userData.address?.line2 || ""}
                   type="text"
                 />
-              </p>
+              </div>
             ) : (
               <p className="text-gray-500">
                 {userData.address?.line1}
-                <br />
-                {userData.address?.line2}
+                {userData.address?.line2 && (
+                  <>
+                    <br />
+                    {userData.address?.line2}
+                  </>
+                )}
               </p>
             )}
           </div>
@@ -327,14 +332,14 @@ const MyProfile = () => {
            <p className="text-neutral-500 underline mt-5">LIFESTYLE PROFILE</p>
            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-y-4 gap-x-2 mt-3 text-neutral-700 items-center">
              
-             <p className="font-medium text-sm">1. What type of diet do you follow? Any one</p>
+             <p className="font-medium text-sm">1. What type of diet do you follow?</p>
              {isEdit ? (
                <select className="max-w-full bg-gray-100 p-2" onChange={(e) => setUserData(prev => ({...prev, dietType: e.target.value}))} value={userData.dietType || "Not Selected"}>
                  <option value="Not Selected">Not Selected</option>
-                 <option value="Non-Vegetarian">Non-Vegetarian</option>
-                 <option value="Ketogenic">Ketogenic</option>
                  <option value="Vegetarian">Vegetarian</option>
                  <option value="Vegan">Vegan</option>
+                 <option value="Non-Vegetarian">Non-Vegetarian</option>
+                 <option value="Diabetic">Diabetic</option>
                </select>
              ) : <p className="text-gray-500 font-light">{userData.dietType || "Not Selected"}</p>}
  
@@ -364,12 +369,13 @@ const MyProfile = () => {
                </div>
              )}
  
-             <p className="font-medium text-sm">3. Are you consuming Alcohol?</p>
+             <p className="font-medium text-sm">3. Do you consume alcohol?</p>
              {isEdit ? (
                <select className="max-w-full bg-gray-100 p-2" onChange={(e) => setUserData(prev => ({...prev, alcoholConsumption: e.target.value}))} value={userData.alcoholConsumption || "Not Selected"}>
                  <option value="Not Selected">Not Selected</option>
-                 <option value="Yes">Yes</option>
-                 <option value="No">No</option>
+                 <option value="None">None</option>
+                 <option value="Occasional">Occasional</option>
+                 <option value="Frequent">Frequent</option>
                </select>
              ) : <p className="text-gray-500 font-light">{userData.alcoholConsumption || "Not Selected"}</p>}
  
@@ -386,9 +392,11 @@ const MyProfile = () => {
              {isEdit ? (
                <select className="max-w-full bg-gray-100 p-2" onChange={(e) => setUserData(prev => ({...prev, dailyRoutine: e.target.value}))} value={userData.dailyRoutine || "Not Selected"}>
                  <option value="Not Selected">Not Selected</option>
-                 <option value="Sedentary">Sedentary</option>
+                 <option value="Sedentary (Mostly sitting)">Sedentary (Mostly sitting)</option>
+                 <option value="Moderately Active (Regular movement)">Moderately Active (Regular movement)</option>
+                 <option value="Highly Active (Physical labor or heavy exercise)">Highly Active (Physical labor or heavy exercise)</option>
                  <option value="Travel frequently">Travel frequently</option>
-                 <option value="Irregular schedule">Irregular schedule</option>
+                 <option value="Irregular shift/schedule">Irregular shift/schedule</option>
                </select>
              ) : <p className="text-gray-500 font-light">{userData.dailyRoutine || "Not Selected"}</p>}
  
@@ -419,12 +427,13 @@ const MyProfile = () => {
                </select>
              ) : <p className="text-gray-500 font-light">{userData.sleepPattern || "Not Selected"}</p>}
  
-             <p className="font-medium text-sm">9. How do you cope with stress?</p>
+             <p className="font-medium text-sm">9. How often do you experience high levels of stress?</p>
              {isEdit ? (
                <select className="max-w-full bg-gray-100 p-2" onChange={(e) => setUserData(prev => ({...prev, stressCoping: e.target.value}))} value={userData.stressCoping || "Not Selected"}>
                  <option value="Not Selected">Not Selected</option>
-                 <option value="Get stressed sometimes">Get stressed sometimes</option>
-                 <option value="Chronically stressed">Chronically stressed</option>
+                 <option value="Rarely">Rarely</option>
+                 <option value="Sometimes">Sometimes</option>
+                 <option value="Chronically/Frequently">Chronically/Frequently</option>
                </select>
              ) : <p className="text-gray-500 font-light">{userData.stressCoping || "Not Selected"}</p>}
  
@@ -464,13 +473,13 @@ const MyProfile = () => {
                </div>
              )}
  
-             <p className="font-medium text-sm">12. How many cigarettes do you smoke daily ?</p>
+             <p className="font-medium text-sm">12. What is your smoking status?</p>
              {isEdit ? (
                <select className="max-w-full bg-gray-100 p-2" onChange={(e) => setUserData(prev => ({...prev, smokingStatus: e.target.value}))} value={userData.smokingStatus || "Not Selected"}>
                  <option value="Not Selected">Not Selected</option>
-                 <option value="I don't smoke">I don't smoke</option>
-                 <option value="< 3 cigarettes per day">&lt; 3 cigarettes per day</option>
-                 <option value="> 3 cigarettes per day">&gt; 3 cigarettes per day</option>
+                 <option value="Non-smoker">Non-smoker</option>
+                 <option value="Former smoker">Former smoker</option>
+                 <option value="Current smoker">Current smoker</option>
                </select>
              ) : <p className="text-gray-500 font-light">{userData.smokingStatus || "Not Selected"}</p>}
              
