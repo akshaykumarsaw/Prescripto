@@ -1,0 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Inter:wght@300..700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased selection:bg-primary/30 selection:text-primaryDark;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.glass-panel {
+  @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-glass;
+}
+
+.premium-card {
+  @apply bg-white rounded-2xl shadow-premium hover:shadow-lg transition-all duration-300;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+}
+
+.gradient-bg {
+  @apply bg-gradient-to-r from-primary to-primaryDark text-white;
+}
+
+.active hr {
+  @apply block;
+}
+
+::-webkit-scrollbar {
+  @apply hidden;
+}
+
+@media (max-width: 740px) {
+  .active p {
+    @apply text-white bg-primary;
+  }
+}
