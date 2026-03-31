@@ -59,11 +59,11 @@ const Dashboard = () => {
           <div className="pt-4 border border-t-0">
             {dashData.latestAppointments.map((item, index) => (
               <div
-                className="flex items-center px-6 py-3 hover:bg-gray-100"
+                className="flex items-center gap-3 px-6 py-3 hover:bg-gray-100"
                 key={index}
               >
                 <img
-                  className="rounded-full w-10"
+                  className="rounded-full w-10 h-10 object-cover border border-gray-200"
                   src={item.docData.image}
                   alt=""
                 />
