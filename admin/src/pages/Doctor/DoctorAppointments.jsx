@@ -63,9 +63,15 @@ const DoctorAppointments = () => {
               </div>
             </div>
             <div>
-              <p className="text-xs inline border border-primary px-2 rounded-full">
-                {item.payment ? "Onlone" : "CASH"}
-              </p>
+              {item.payment ? (
+                <span className="text-[10px] font-medium px-2 py-1 bg-green-50 text-green-600 border border-green-200 rounded-full">
+                  Paid Online
+                </span>
+              ) : (
+                <span className="text-[10px] font-medium px-2 py-1 bg-orange-50 text-orange-600 border border-orange-200 rounded-full">
+                  Pending
+                </span>
+              )}
             </div>
             <p className="max-sm:hidden">{calculateAge(item.userData.dob)}</p>
             <p>
