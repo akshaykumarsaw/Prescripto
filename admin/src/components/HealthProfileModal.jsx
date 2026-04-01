@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { assets } from "../assets/assets";
+import ReactMarkdown from 'react-markdown';
 
 const HealthProfileModal = ({ isOpen, onClose, dToken, backendUrl, appointment }) => {
   const [activeTab, setActiveTab] = useState("ai");
@@ -96,10 +97,10 @@ const HealthProfileModal = ({ isOpen, onClose, dToken, backendUrl, appointment }
             <>
               {/* AI Tab */}
               {activeTab === "ai" && (
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-gray-700 bg-gray-50 p-6 rounded-xl border border-gray-100 overflow-auto shadow-inner">
                   {summary ? (
-                    <div className="whitespace-pre-wrap leading-relaxed font-mono text-xs bg-gray-50 p-4 rounded-lg border border-gray-100 overflow-auto">
-                      {summary}
+                    <div className="prose prose-sm prose-headings:text-indigo-900 prose-headings:font-bold prose-headings:mb-3 prose-headings:mt-6 prose-p:text-gray-700 prose-li:marker:text-primary max-w-none prose-a:text-indigo-600 prose-strong:text-gray-900 leading-relaxed">
+                      <ReactMarkdown>{summary}</ReactMarkdown>
                     </div>
                   ) : (
                     <p className="italic text-gray-400">No summary available. Please fill in your profile on the patient portal first.</p>

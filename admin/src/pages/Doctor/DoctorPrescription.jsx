@@ -107,7 +107,7 @@ const DoctorPrescription = () => {
                         </tbody>
                     </table>
                 </div>
-                <button onClick={() => navigate(-1)} className="mt-6 px-6 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-all">
+                <button onClick={() => navigate('/doctor-appointments')} className="mt-6 px-6 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-all">
                     Go Back
                 </button>
             </div>
@@ -176,7 +176,7 @@ const DoctorPrescription = () => {
                     <button type="submit" className="bg-primary text-white px-8 py-2.5 rounded-full hover:bg-blue-600 transition-all shadow-sm">
                         Save Prescription
                     </button>
-                    <button type="button" onClick={() => navigate(-1)} className="px-8 py-2.5 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-all">
+                    <button type="button" onClick={() => navigate('/doctor-appointments')} className="px-8 py-2.5 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-all">
                         Cancel
                     </button>
                 </div>

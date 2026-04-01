@@ -65,7 +65,7 @@ const Prescription = () => {
         return (
             <div className="text-center mt-20">
                 <p className="text-gray-500 mb-4">No prescription is available for this appointment yet.</p>
-                <button onClick={() => navigate(-1)} className="px-6 py-2 bg-primary text-white rounded-full">Go Back</button>
+                <button onClick={() => navigate('/my-appointments')} className="px-6 py-2 bg-primary text-white rounded-full transition-all hover:scale-105">Go Back</button>
             </div>
         );
     }
@@ -73,7 +73,7 @@ const Prescription = () => {
     return (
         <div className="max-w-4xl mx-auto my-10 p-5">
             <div className="flex justify-between items-center mb-6">
-                <button onClick={() => navigate(-1)} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                <button onClick={() => navigate('/my-appointments')} className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
                     ← Back
                 </button>
                 <button onClick={downloadPDF} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 shadow-sm flex items-center gap-2">

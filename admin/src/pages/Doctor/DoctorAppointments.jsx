@@ -54,11 +54,11 @@ const DoctorAppointments = () => {
                 <p>{item.userData.name}</p>
                 <div 
                   onClick={() => setSelectedAppointment(item)}
-                  className="inline-block mt-0.5"
+                  className="inline-block mt-1"
                 >
-                  <span className="text-[10px] text-blue-500 cursor-pointer border-b border-blue-500 border-dashed hover:text-primary transition-colors">
-                     View AI Health Profile
-                  </span>
+                  <button className="bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-100 hover:from-indigo-500 hover:to-purple-600 hover:text-white px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1 shadow-sm transition-all duration-300 transform hover:scale-[1.03]">
+                    <span>✨</span> View AI Profile
+                  </button>
                 </div>
               </div>
             </div>

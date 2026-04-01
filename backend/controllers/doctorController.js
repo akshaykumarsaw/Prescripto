@@ -302,12 +302,14 @@ const generatePatientSummary = async (req, res) => {
   `;
 
   const promptInstructions = `
-    You are a clinical assistant for a doctor. Based on the patient data above, generate a concise clinical dashboard in Markdown with these sections:
-    ## Chief Complaints
-    ## Critical Vitals & Allergy Flags
-    ## Lifestyle Risk Summary
-    ## Medical Records Analysis
-    Be professional, specific, and medically relevant. No generic disclaimers.
+    You are an elite clinical assistant for a doctor. Based on the patient data above, generate a concise, premium clinical dashboard in strictly formatted Markdown with these exact sections:
+    
+    ### 🚨 Chief Complaints
+    ### 📊 Critical Vitals & Allergy Flags
+    ### 🩺 Lifestyle Risk Summary
+    ### 📂 Medical Records Analysis
+    
+    Be professional, specific, and medically relevant. Use bullet points heavily. Do NOT include generic disclaimers.
   `;
 
   // 4. AI call — return rawUser/rawRecords even on AI failure
