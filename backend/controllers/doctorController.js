@@ -4,6 +4,14 @@ import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
 import prescriptionModel from "../models/prescriptionModel.js";
 import notificationModel from "../models/notificationModel.js";
+import userModel from "../models/userModel.js";
+import healthRecordModel from "../models/healthRecordModel.js";
+import Groq from "groq-sdk";
+import { GoogleGenAI } from "@google/genai";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdfParse = require("pdf-parse");
+import axios from "axios";
 
 const changeAvailability = async (req, res) => {
   try {
@@ -232,6 +240,106 @@ const getPrescription = async (req, res) => {
   }
 };
 
+// API to get AI patient summary
+const generatePatientSummary = async (req, res) => {
+  const { userId } = req.body;
+
+  // 1. Always fetch patient data & records first (so raw tab always works)
+  let user = null;
+  let healthRecords = [];
+  try {
+    user = await userModel.findById(userId).select("-password -image");
+    if (!user) return res.json({ success: false, message: "User not found" });
+    healthRecords = await healthRecordModel.find({ userId });
+  } catch (error) {
+    return res.json({ success: false, message: "Failed to load patient data." });
+  }
+
+  // 2. Process files
+  let extractedText = "";
+  let imagesForGemini = [];
+  for (const record of healthRecords) {
+    try {
+      const response = await axios.get(record.fileUrl, { responseType: 'arraybuffer' });
+      const buffer = Buffer.from(response.data, 'binary');
+      const contentType = response.headers['content-type'] || '';
+      if (contentType.includes('pdf') || record.fileUrl.toLowerCase().endsWith('.pdf')) {
+        const pdfData = await pdfParse(buffer);
+        extractedText += `\n--- Document: ${record.title} ---\n${pdfData.text}\n`;
+      } else if (contentType.includes('image') || record.fileUrl.match(/\.(jpeg|jpg|png|webp)$/i)) {
+        imagesForGemini.push({ inlineData: { data: buffer.toString('base64'), mimeType: contentType || 'image/jpeg' } });
+      }
+    } catch (err) {
+      console.error(`Skipping record "${record.title}": ${err.message}`);
+    }
+  }
+
+  // 3. Build prompt
+  const patientContext = `
+    Name: ${user.name}
+    Age: ${user.age || 'N/A'}, Gender: ${user.gender || 'N/A'}, Blood Group: ${user.bloodGroup || 'N/A'}
+    Height: ${user.height || 'N/A'}, Weight: ${user.weight || 'N/A'}
+
+    LIFESTYLE & RISKS:
+    Smoking: ${user.smokingStatus || 'N/A'}
+    Alcohol: ${user.alcoholConsumption || 'N/A'}
+    Diet: ${user.dietType || 'N/A'}
+    Sleep: ${user.sleepPattern || 'N/A'}
+    Exercise: ${user.exerciseFrequency || 'N/A'}
+    Stress: ${user.stressCoping || 'N/A'}
+    Fatigue: ${user.fatigueOften || 'N/A'}
+    Sugar Cravings: ${user.sugarCravings || 'N/A'}
+    Daily Routine: ${user.dailyRoutine || 'N/A'}
+    Flu Frequency: ${user.fluFrequency || 'N/A'}
+
+    MEDICAL VITAL INFO:
+    Food Allergies: ${user.foodAllergies === 'Yes' ? (user.foodAllergiesDetail || 'Yes') : 'None'}
+    Daily Medication: ${user.dailyMedication === 'Yes' ? (user.dailyMedicationDetail || 'Yes') : 'None'}
+    Recent Feelings/Complaints: ${user.feeling || 'None noted.'}
+
+    EXTERNAL MEDICAL RECORDS (PDF text):
+    ${extractedText || 'No PDF records provided.'}
+  `;
+
+  const promptInstructions = `
+    You are a clinical assistant for a doctor. Based on the patient data above, generate a concise clinical dashboard in Markdown with these sections:
+    ## Chief Complaints
+    ## Critical Vitals & Allergy Flags
+    ## Lifestyle Risk Summary
+    ## Medical Records Analysis
+    Be professional, specific, and medically relevant. No generic disclaimers.
+  `;
+
+  // 4. AI call — return rawUser/rawRecords even on AI failure
+  let summaryResponse = "";
+  try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+    if (imagesForGemini.length > 0) {
+      const parts = [{ text: patientContext + promptInstructions }, ...imagesForGemini.map(img => img.inlineData)];
+      const response = await ai.models.generateContent({ model: 'gemini-1.5-flash', contents: parts });
+      summaryResponse = response.text;
+    } else {
+      const completion = await groq.chat.completions.create({
+        messages: [
+          { role: "system", content: "You are an expert clinical summarization AI." },
+          { role: "user", content: patientContext + promptInstructions }
+        ],
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.2,
+      });
+      summaryResponse = completion.choices[0]?.message?.content || "";
+    }
+  } catch (aiError) {
+    console.error("AI Gen Error:", aiError.message);
+    summaryResponse = `> ⚠️ AI summary unavailable: ${aiError.message}\n\nPlease check the Raw Lifestyle Form and Attachments tabs for full patient data.`;
+  }
+
+  // Always return patient data so the other tabs still work
+  res.json({ success: true, summary: summaryResponse, rawUser: user, rawRecords: healthRecords });
+};
+
 export {
   changeAvailability,
   doctorList,
@@ -243,5 +351,6 @@ export {
   doctorProfile,
   updateDoctorProfile,
   createPrescription,
-  getPrescription
+  getPrescription,
+  generatePatientSummary
 };

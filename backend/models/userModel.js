@@ -32,6 +32,8 @@ const userSchema = new mongoose.Schema({
   fluFrequency: { type: String, default: "Not Selected" },
   dailyMedication: { type: String, default: "Not Selected" },
   dailyMedicationDetail: { type: String, default: "" },
+  smokingStatus: { type: String, default: "Not Selected" },
+  alcoholConsumption: { type: String, default: "Not Selected" },
 
   feeling: { type: String, default: "" },
   lastUpdatedDate: { type: Number, default: 0 },

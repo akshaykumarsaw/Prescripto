@@ -9,7 +9,8 @@ import {
   doctorProfile,
   updateDoctorProfile,
   createPrescription,
-  getPrescription
+  getPrescription,
+  generatePatientSummary
 } from "../controllers/doctorController.js";
 import authDoctor from "../middlewares/authDoctor.js";
 
@@ -27,5 +28,8 @@ doctorRouter.post("/update-profile", authDoctor, updateDoctorProfile);
 // Prescriptions
 doctorRouter.post("/create-prescription", authDoctor, createPrescription);
 doctorRouter.get("/prescription", authDoctor, getPrescription); // can pass appointmentId in query/body
+
+// AI Summary
+doctorRouter.post("/patient-summary", authDoctor, generatePatientSummary);
 
 export default doctorRouter;

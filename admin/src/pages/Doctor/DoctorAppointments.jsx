@@ -1,7 +1,8 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { DoctorContext } from "../../context/DoctorContext";
 import { AppContext } from "../../context/AppContext";
 import { assets } from "../../assets/assets";
+import HealthProfileModal from "../../components/HealthProfileModal";
 
 const DoctorAppointments = () => {
   const {
@@ -10,9 +11,11 @@ const DoctorAppointments = () => {
     getAppointments,
     completeAppointment,
     cancelAppointment,
+    backendUrl
   } = useContext(DoctorContext);
 
   const { calculateAge, slotDateFormat, currency } = useContext(AppContext);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   useEffect(() => {
     if (dToken) {
@@ -49,21 +52,13 @@ const DoctorAppointments = () => {
               />{" "}
               <div>
                 <p>{item.userData.name}</p>
-                <div className="group relative inline-block">
-                  <span className="text-[10px] text-blue-500 cursor-pointer border-b border-blue-500 border-dashed">Health Profile</span>
-                  <div className="hidden group-hover:block absolute z-20 w-56 bg-white border border-gray-200 rounded shadow-xl p-3 left-0 top-full mt-1 text-xs text-gray-600">
-                    <p className="font-semibold text-gray-800 mb-1 border-b pb-1">Lifestyle & Vitals</p>
-                    <div className="grid grid-cols-2 gap-1 mt-2">
-                      <p className="font-medium">Smoking:</p><p>{item.userData.smokingStatus || 'N/A'}</p>
-                      <p className="font-medium">Alcohol:</p><p>{item.userData.alcoholConsumption || 'N/A'}</p>
-                      <p className="font-medium">Activity:</p><p>{item.userData.activityLevel || 'N/A'}</p>
-                      <p className="font-medium">Diet:</p><p>{item.userData.dietaryPreferences || 'N/A'}</p>
-                    </div>
-                    <div className="mt-2 text-red-500">
-                      <p><span className="font-medium text-gray-700">Allergies: </span>{item.userData.knownAllergies || 'None'}</p>
-                      <p><span className="font-medium text-gray-700">Chronic: </span>{item.userData.chronicConditions || 'None'}</p>
-                    </div>
-                  </div>
+                <div 
+                  onClick={() => setSelectedAppointment(item)}
+                  className="inline-block mt-0.5"
+                >
+                  <span className="text-[10px] text-blue-500 cursor-pointer border-b border-blue-500 border-dashed hover:text-primary transition-colors">
+                     View AI Health Profile
+                  </span>
                 </div>
               </div>
             </div>
@@ -123,6 +118,14 @@ const DoctorAppointments = () => {
           </div>
         ))}
       </div>
+
+      <HealthProfileModal
+        isOpen={!!selectedAppointment}
+        onClose={() => setSelectedAppointment(null)}
+        appointment={selectedAppointment}
+        dToken={dToken}
+        backendUrl={backendUrl}
+      />
     </div>
   );
 };

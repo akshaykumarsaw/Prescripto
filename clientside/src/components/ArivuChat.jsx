@@ -62,8 +62,7 @@ const ArivuChat = () => {
                 <div className="bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col mb-4" style={{ height: '500px' }}>
                     <div className="bg-primary text-white p-4 flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center font-bold">A</div>
-                            <h3 className="font-semibold">Arivu Assistant</h3>
+                            <h3 className="font-semibold text-lg">Arivu Assistant</h3>
                         </div>
                         <button onClick={() => setIsOpen(false)} className="text-white hover:text-gray-200">
                             ✕
