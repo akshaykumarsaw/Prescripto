@@ -60,6 +60,23 @@ const MyProfile = () => {
     }
   };
 
+  const handleDeleteRecord = async (recordId) => {
+    if (window.confirm("Are you sure you want to permanently delete this health record? This action cannot be undone.")) {
+      try {
+        const { data } = await axios.post(backendUrl + "/api/user/delete-record", { recordId }, { headers: { token } });
+        if (data.success) {
+          toast.success(data.message);
+          fetchHealthRecords();
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    }
+  };
+
   const updateUserProfileData = async () => {
     try {
       const formData = new FormData();
@@ -540,14 +557,22 @@ const MyProfile = () => {
                       <span className="font-medium text-gray-800">{record.title}</span>
                       <span className="text-xs text-gray-500">{new Date(record.date).toLocaleDateString()}</span>
                     </div>
-                    <a
-                      href={record.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition-all"
-                    >
-                      View Document
-                    </a>
+                    <div className="flex gap-2">
+                      <a
+                        href={record.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition-all cursor-pointer"
+                      >
+                        View Document
+                      </a>
+                      <button
+                        onClick={() => handleDeleteRecord(record._id)}
+                        className="text-sm bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 transition-all cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

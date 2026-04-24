@@ -324,6 +324,43 @@ const getHealthRecords = async (req, res) => {
   }
 };
 
+// API to delete a patient's health record
+const deleteHealthRecord = async (req, res) => {
+  try {
+    const { userId, recordId } = req.body;
+    
+    // Find the record
+    const record = await healthRecordModel.findOne({ _id: recordId, userId });
+    
+    if (!record) {
+      return res.json({ success: false, message: "Record not found" });
+    }
+
+    // Extract Cloudinary public_id from fileUrl
+    // Example: https://res.cloudinary.com/dvxxx/image/upload/v1714523/abcbedf.pdf
+    try {
+      if (record.fileUrl && record.fileUrl.includes('cloudinary.com')) {
+        const urlParts = record.fileUrl.split('/');
+        const lastPart = urlParts[urlParts.length - 1]; // abcbedf.pdf
+        const publicId = lastPart.split('.')[0]; // abcbedf
+        
+        // Destroy from Cloudinary, best effort flag.
+        await cloudinary.uploader.destroy(publicId);
+      }
+    } catch (cleanUpError) {
+      console.log("Cloudinary cleanup failed optionally: ", cleanUpError);
+    }
+    
+    // Delete from DB
+    await healthRecordModel.findByIdAndDelete(recordId);
+    
+    res.json({ success: true, message: "Health Record Deleted Successfully" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // API to get patient's prescriptions
 const getPrescriptions = async (req, res) => {
   try {
@@ -437,6 +474,7 @@ export {
   listAppointment,
   cancelAppointment,
   uploadHealthRecord,
+  deleteHealthRecord,
   getHealthRecords,
   getPrescriptions,
   paymentRazorpay,

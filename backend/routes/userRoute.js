@@ -8,6 +8,7 @@ import {
   listAppointment,
   cancelAppointment,
   uploadHealthRecord,
+  deleteHealthRecord,
   getHealthRecords,
   getPrescriptions,
   paymentRazorpay,
@@ -34,7 +35,8 @@ userRouter.get("/appointments", authUser, listAppointment);
 userRouter.post("/cancel-appointment", authUser, cancelAppointment);
 
 // Health Records & Prescriptions
-userRouter.post("/upload-record", authUser, upload.single("document"), uploadHealthRecord);
+userRouter.post("/upload-record", upload.single("document"), authUser, uploadHealthRecord);
+userRouter.post("/delete-record", authUser, deleteHealthRecord);
 userRouter.get("/health-records", authUser, getHealthRecords);
 userRouter.get("/prescriptions", authUser, getPrescriptions);
 
