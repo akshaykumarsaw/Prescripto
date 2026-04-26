@@ -11,7 +11,6 @@ import { GoogleGenAI } from "@google/genai";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const pdfParse = require("pdf-parse");
-import axios from "axios";
 
 const changeAvailability = async (req, res) => {
   try {
@@ -264,34 +263,19 @@ const generatePatientSummary = async (req, res) => {
       let contentType = "";
       let isPdf = false;
       
-      // If document is stored as buffer in database
+      // Process only native DB buffer documents
       if (record.fileData && record.contentType) {
         buffer = Buffer.from(record.fileData);
         contentType = record.contentType;
         isPdf = contentType.includes('pdf');
       } 
-      // Fallback for legacy Cloudinary URLs
-      else if (record.fileUrl) {
-        const response = await axios.get(record.fileUrl, { 
-          responseType: 'arraybuffer',
-          headers: {
-            'User-Agent': 'Mozilla/5.0'
-          }
-        });
-        buffer = Buffer.from(response.data, 'binary');
-        contentType = response.headers['content-type'] || '';
-        
-        isPdf = record.fileUrl.includes('/raw/upload/') || 
-                record.fileUrl.toLowerCase().includes('.pdf') || 
-                contentType.includes('pdf');
-      }
-
+      
       if (!buffer) continue;
 
       if (isPdf) {
         const pdfData = await pdfParse(buffer);
         extractedText += `\n--- Document: ${record.title} ---\n${pdfData.text}\n`;
-      } else if (contentType.includes('image') || (record.fileUrl && record.fileUrl.match(/\.(jpeg|jpg|png|webp)$/i))) {
+      } else if (contentType.includes('image')) {
         imagesForGemini.push({ inlineData: { data: buffer.toString('base64'), mimeType: contentType || 'image/jpeg' } });
       }
     } catch (err) {

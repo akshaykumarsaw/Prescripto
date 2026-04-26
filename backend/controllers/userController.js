@@ -293,7 +293,7 @@ const uploadHealthRecord = async (req, res) => {
       return res.json({ success: false, message: "Missing title or file" });
     }
 
-    // Store in MongoDB as Buffer instead of Cloudinary
+    // Store in MongoDB as Buffer
     const fileBuffer = fs.readFileSync(documentFile.path);
     
     // Create new record with raw buffer and content type
@@ -332,7 +332,7 @@ const getHealthRecords = async (req, res) => {
 
 // Proxy API to view/download health record file
 // This fetches the file server-side and streams it back with correct headers,
-// bypassing all Cloudinary delivery restrictions that block direct browser access.
+// Serving documents directly from MongoDB buffer.
 const viewHealthRecord = async (req, res) => {
   try {
     // Token comes as query param since this endpoint is opened via window.open()
@@ -372,25 +372,6 @@ const viewHealthRecord = async (req, res) => {
       return res.send(record.fileData);
     }
     
-    // Legacy support for older records that still have Cloudinary URLs
-    if (record.fileUrl) {
-      const { default: fetch } = await import('node-fetch');
-      const response = await fetch(record.fileUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0'
-        }
-      });
-
-      if (!response.ok) {
-        return res.status(502).send("Could not fetch legacy file from storage");
-      }
-
-      const filename = encodeURIComponent(record.title || 'health-record') + '.pdf';
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
-      return response.body.pipe(res);
-    }
-
     res.status(404).send("File contents not found in database.");
   } catch (error) {
     console.log(error);
@@ -410,7 +391,7 @@ const deleteHealthRecord = async (req, res) => {
       return res.json({ success: false, message: "Record not found" });
     }
 
-    // Removed Cloudinary cleanup. If it's a Buffer, it deletes automatically with the document.
+    // File deletes automatically with the document since it's a Buffer in DB.
     
     // Delete from DB
     await healthRecordModel.findByIdAndDelete(recordId);
