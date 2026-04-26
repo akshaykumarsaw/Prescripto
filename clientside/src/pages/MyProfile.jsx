@@ -558,14 +558,12 @@ const MyProfile = () => {
                       <span className="text-xs text-gray-500">{new Date(record.date).toLocaleDateString()}</span>
                     </div>
                     <div className="flex gap-2">
-                      <a
-                        href={record.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => window.open(`${backendUrl}/api/user/view-record/${record._id}?token=${token}`, '_blank')}
                         className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition-all cursor-pointer"
                       >
                         View Document
-                      </a>
+                      </button>
                       <button
                         onClick={() => handleDeleteRecord(record._id)}
                         className="text-sm bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 transition-all cursor-pointer"

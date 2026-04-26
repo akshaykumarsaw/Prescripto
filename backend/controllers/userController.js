@@ -2,7 +2,7 @@ import validator from "validator";
 import bycrypt from "bcrypt";
 import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
-import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import healthRecordModel from "../models/healthRecordModel.js";
@@ -141,13 +141,15 @@ const updateProfile = async (req, res) => {
     });
 
     if (imageFile) {
-      // upload image to cloudinary
-      const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
-        resource_type: "image",
-      });
-      const imageURL = imageUpload.secure_url;
-
-      await userModel.findByIdAndUpdate(userId, { image: imageURL });
+      // Convert image to base64 buffer and delete local temp file
+      const imageBuffer = fs.readFileSync(imageFile.path);
+      const base64Image = `data:${imageFile.mimetype};base64,${imageBuffer.toString("base64")}`;
+      
+      await userModel.findByIdAndUpdate(userId, { image: base64Image });
+      
+      try {
+        fs.unlinkSync(imageFile.path); // cleanup
+      } catch (err) {}
     }
 
     res.json({ success: true, message: "Profile Updated" });
@@ -291,18 +293,22 @@ const uploadHealthRecord = async (req, res) => {
       return res.json({ success: false, message: "Missing title or file" });
     }
 
-    // upload file to cloudinary
-    const fileUpload = await cloudinary.uploader.upload(documentFile.path, {
-      resource_type: "auto", // accept pdf, image, etc.
-    });
-
+    // Store in MongoDB as Buffer instead of Cloudinary
+    const fileBuffer = fs.readFileSync(documentFile.path);
+    
+    // Create new record with raw buffer and content type
     const newRecord = new healthRecordModel({
       userId,
       title,
-      fileUrl: fileUpload.secure_url
+      fileData: fileBuffer,
+      contentType: documentFile.mimetype
     });
 
     await newRecord.save();
+    
+    try {
+      fs.unlinkSync(documentFile.path); // Cleanup temp local file
+    } catch (e) {}
 
     res.json({ success: true, message: "Health Record Uploaded Successfully" });
   } catch (error) {
@@ -324,6 +330,74 @@ const getHealthRecords = async (req, res) => {
   }
 };
 
+// Proxy API to view/download health record file
+// This fetches the file server-side and streams it back with correct headers,
+// bypassing all Cloudinary delivery restrictions that block direct browser access.
+const viewHealthRecord = async (req, res) => {
+  try {
+    // Token comes as query param since this endpoint is opened via window.open()
+    const token = req.query.token;
+    if (!token) return res.status(401).send("Unauthorized");
+
+    let userId;
+    try {
+      const { default: jwt } = await import('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded.id || decoded._id;
+    } catch {
+      return res.status(401).send("Invalid token");
+    }
+
+    const { recordId } = req.params;
+    const record = await healthRecordModel.findById(recordId);
+    
+    if (!record) {
+      return res.status(404).send("Record not found");
+    }
+
+    // Check Authorization: Requester must be the owner OR a valid doctor
+    const isOwner = record.userId === userId;
+    const isDoctor = await doctorModel.findById(userId);
+
+    if (!isOwner && !isDoctor) {
+      return res.status(403).send("You are not authorized to view this record");
+    }
+
+    // If it's a native DB buffer document
+    if (record.fileData && record.contentType) {
+      const filename = encodeURIComponent(record.title || 'health-record') + 
+                       (record.contentType.includes('pdf') ? '.pdf' : '');
+      res.setHeader('Content-Type', record.contentType);
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      return res.send(record.fileData);
+    }
+    
+    // Legacy support for older records that still have Cloudinary URLs
+    if (record.fileUrl) {
+      const { default: fetch } = await import('node-fetch');
+      const response = await fetch(record.fileUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0'
+        }
+      });
+
+      if (!response.ok) {
+        return res.status(502).send("Could not fetch legacy file from storage");
+      }
+
+      const filename = encodeURIComponent(record.title || 'health-record') + '.pdf';
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      return response.body.pipe(res);
+    }
+
+    res.status(404).send("File contents not found in database.");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message);
+  }
+};
+
 // API to delete a patient's health record
 const deleteHealthRecord = async (req, res) => {
   try {
@@ -336,20 +410,7 @@ const deleteHealthRecord = async (req, res) => {
       return res.json({ success: false, message: "Record not found" });
     }
 
-    // Extract Cloudinary public_id from fileUrl
-    // Example: https://res.cloudinary.com/dvxxx/image/upload/v1714523/abcbedf.pdf
-    try {
-      if (record.fileUrl && record.fileUrl.includes('cloudinary.com')) {
-        const urlParts = record.fileUrl.split('/');
-        const lastPart = urlParts[urlParts.length - 1]; // abcbedf.pdf
-        const publicId = lastPart.split('.')[0]; // abcbedf
-        
-        // Destroy from Cloudinary, best effort flag.
-        await cloudinary.uploader.destroy(publicId);
-      }
-    } catch (cleanUpError) {
-      console.log("Cloudinary cleanup failed optionally: ", cleanUpError);
-    }
+    // Removed Cloudinary cleanup. If it's a Buffer, it deletes automatically with the document.
     
     // Delete from DB
     await healthRecordModel.findByIdAndDelete(recordId);
@@ -475,6 +536,7 @@ export {
   cancelAppointment,
   uploadHealthRecord,
   deleteHealthRecord,
+  viewHealthRecord,
   getHealthRecords,
   getPrescriptions,
   paymentRazorpay,

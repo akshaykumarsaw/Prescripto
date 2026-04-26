@@ -1,10 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DoctorContext } from "../../context/DoctorContext";
 import { AppContext } from "../../context/AppContext";
 import { assets } from "../../assets/assets";
 import HealthProfileModal from "../../components/HealthProfileModal";
 
 const DoctorAppointments = () => {
+  const navigate = useNavigate();
   const {
     dToken,
     appointments,
@@ -57,7 +59,7 @@ const DoctorAppointments = () => {
                   className="inline-block mt-1"
                 >
                   <button className="bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-100 hover:from-indigo-500 hover:to-purple-600 hover:text-white px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1 shadow-sm transition-all duration-300 transform hover:scale-[1.03]">
-                    <span>✨</span> View AI Profile
+                    View Profile
                   </button>
                 </div>
               </div>
@@ -87,7 +89,7 @@ const DoctorAppointments = () => {
               <div className="flex flex-col gap-1 items-end">
                 <p className="text-green-500 text-xs font-medium">Completed</p>
                 <button
-                  onClick={() => window.open(`/doctor-prescription/${item._id}`, '_blank')}
+                  onClick={() => navigate(`/doctor-prescription/${item._id}`)}
                   className="bg-purple-50 text-purple-600 text-xs px-3 py-1 rounded hover:bg-purple-500 hover:text-white transition-all shadow-sm border border-purple-100"
                 >
                   Prescription
@@ -96,13 +98,13 @@ const DoctorAppointments = () => {
             ) : (
               <div className="flex gap-2">
                 <button
-                  onClick={() => window.open(`/doctor-video-call/${item._id}`, '_blank')}
+                  onClick={() => navigate(`/doctor-video-call/${item._id}`)}
                   className="bg-green-50 text-green-600 text-xs px-3 py-1 rounded hover:bg-green-500 hover:text-white transition-all"
                 >
                   Video
                 </button>
                 <button
-                  onClick={() => window.open(`/doctor-chat/${item._id}`, '_blank')}
+                  onClick={() => navigate(`/doctor-chat/${item._id}`)}
                   className="bg-blue-50 text-blue-500 text-xs px-3 py-1 rounded hover:bg-blue-500 hover:text-white transition-all"
                 >
                   Chat

@@ -1,6 +1,6 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
-import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
@@ -57,11 +57,13 @@ const addDoctor = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // upload image to cloudinary
-    const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
-      resource_type: "image",
-    });
-    const imageUrl = imageUpload.secure_url;
+    // Convert image to base64
+    const imageBuffer = fs.readFileSync(imageFile.path);
+    const imageUrl = `data:${imageFile.mimetype};base64,${imageBuffer.toString("base64")}`;
+    
+    try {
+      fs.unlinkSync(imageFile.path); // cleanup temp file
+    } catch(e) {}
 
     const doctorData = {
       name,

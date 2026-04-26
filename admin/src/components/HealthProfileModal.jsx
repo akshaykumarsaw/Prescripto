@@ -172,9 +172,12 @@ const HealthProfileModal = ({ isOpen, onClose, dToken, backendUrl, appointment }
                               <p className="text-xs text-gray-500">Uploaded: {new Date(record.date).toLocaleDateString()}</p>
                            </div>
                         </div>
-                        <a href={record.fileUrl} target="_blank" rel="noopener noreferrer" className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors">
+                        <button 
+                          onClick={() => window.open(`${backendUrl}/api/user/view-record/${record._id}?token=${dToken}`, '_blank')}
+                          className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors cursor-pointer"
+                        >
                           View File
-                        </a>
+                        </button>
                       </div>
                     ))
                   ) : (
